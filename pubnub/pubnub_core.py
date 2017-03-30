@@ -105,8 +105,8 @@ class PubNubCore:
     def unsubscribe(self):
         return UnsubscribeBuilder(self._subscription_manager)
 
-    def unsubscribe_all(self):
-        return self._subscription_manager.unsubscribe_all()
+    def unsubscribe_all(self, include_presence=False):
+        return self._subscription_manager.unsubscribe_all(include_presence)
 
     def reconnect(self):
         return self._subscription_manager.reconnect()

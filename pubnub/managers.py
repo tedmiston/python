@@ -269,10 +269,10 @@ class SubscriptionManager(object):
     def get_subscribed_channel_groups(self):
         return self._subscription_state.prepare_channel_group_list(False)
 
-    def unsubscribe_all(self):
+    def unsubscribe_all(self, include_presence=False):
         self.adapt_unsubscribe_builder(UnsubscribeOperation(
-            channels=self._subscription_state.prepare_channel_list(False),
-            channel_groups=self._subscription_state.prepare_channel_group_list(False)
+            channels=self._subscription_state.prepare_channel_list(include_presence),
+            channel_groups=self._subscription_state.prepare_channel_group_list(include_presence)
         ))
 
     def adapt_subscribe_builder(self, subscribe_operation):
