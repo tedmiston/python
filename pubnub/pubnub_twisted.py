@@ -73,7 +73,6 @@ class TwistedSubscriptionManager(SubscriptionManager):
         if self.clock is not None:
             self.worker_loop.clock = self.clock
 
-        # self.worker_loop = looping_call.start(0.1, False)
         self.worker_task = self.worker_loop.start(0.1, False)
 
     def _set_consumer_event(self):
@@ -128,9 +127,6 @@ class TwistedSubscriptionManager(SubscriptionManager):
             raise ex
 
     def _stop_subscribe_loop(self):
-        if self.worker_task:
-            self.worker_task.cancel()
-
         if self._subscribe_request_task is not None:  # and not self._subscribe_request_task.called:
             self._subscribe_request_task.cancel()
 
@@ -224,14 +220,17 @@ class PubNubTwisted(PubNubCore):
             self.reactor.run()
 
     def stop(self, skip_reactor=False):
-        if self._subscription_manager is not None:
-            self._subscription_manager._should_stop = True
-            self._subscription_manager._stop_subscribe_loop()
+        if skip_reactor and not self.config.enable_subscribe:
+            return
+
+        self._subscription_manager._should_stop = True
+        self._subscription_manager._stop_subscribe_loop()
         if self._subscription_manager.worker_loop:
             try:
                 self._subscription_manager.worker_loop.stop()
             except AssertionError:
                 pass
+
         if not skip_reactor:
             self.reactor.stop()
 
