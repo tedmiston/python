@@ -57,6 +57,7 @@ class TwistedSubscriptionManager(SubscriptionManager):
     def __init__(self, pubnub_instance):
         self._message_queue = DeferredQueue()
         self.worker_loop = None
+        self.worker_task = None
         self._heartbeat_loop = None
         self._heartbeat_call = None
         self.clock = pubnub_instance.clock
@@ -67,12 +68,12 @@ class TwistedSubscriptionManager(SubscriptionManager):
 
     def _start_worker(self):
         consumer = TwistedSubscribeMessageWorker(self._pubnub, self._listener_manager, self._message_queue, None)
-        looping_call = LoopingCall(consumer.run)
+        self.worker_loop = LoopingCall(consumer.run)
 
         if self.clock is not None:
-            looping_call.clock = self.clock
+            self.worker_loop.clock = self.clock
 
-        self.worker_loop = looping_call.start(0.1, False)
+        self.worker_task = self.worker_loop.start(0.1, False)
 
     def _set_consumer_event(self):
         raise NotImplementedError
@@ -82,6 +83,9 @@ class TwistedSubscriptionManager(SubscriptionManager):
 
     def _start_subscribe_loop(self):
         self._stop_subscribe_loop()
+
+        if self._should_stop:
+            return
 
         combined_channels = self._subscription_state.prepare_channel_list(True)
         combined_groups = self._subscription_state.prepare_channel_group_list(True)
@@ -123,7 +127,7 @@ class TwistedSubscriptionManager(SubscriptionManager):
             raise ex
 
     def _stop_subscribe_loop(self):
-        if self._subscribe_request_task is not None and not self._subscribe_request_task.called:
+        if self._subscribe_request_task is not None:  # and not self._subscribe_request_task.called:
             self._subscribe_request_task.cancel()
 
     def _stop_heartbeat_timer(self):
@@ -209,13 +213,26 @@ class PubNubTwisted(PubNubCore):
         }
 
     def start(self, skip_reactor=False):
+        self._subscription_manager._should_stop = False
         if self._subscription_manager is not None:
             self._subscription_manager._start_worker()
         if not skip_reactor:
             self.reactor.run()
 
-    def stop(self):
-        self.reactor.stop()
+    def stop(self, skip_reactor=False):
+        if skip_reactor and not self.config.enable_subscribe:
+            return
+
+        self._subscription_manager._should_stop = True
+        self._subscription_manager._stop_subscribe_loop()
+        if self._subscription_manager.worker_loop:
+            try:
+                self._subscription_manager.worker_loop.stop()
+            except AssertionError:
+                pass
+
+        if not skip_reactor:
+            self.reactor.stop()
 
     def add_listener(self, listener):
         if self._subscription_manager is not None:
