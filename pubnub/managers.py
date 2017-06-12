@@ -312,6 +312,7 @@ class SubscriptionManager(object):
         self._set_consumer_event()
 
     def _handle_endpoint_call(self, raw_result, status):
+        logger.debug('Handling endpoint call')
         assert isinstance(status, PNStatus)
 
         if not self._subscription_status_announced:
@@ -328,16 +329,16 @@ class SubscriptionManager(object):
             self._listener_manager.announce_status(pn_status)
 
         result = SubscribeEnvelope.from_json(raw_result)
-        only_channel = self._subscription_state.subscribed_to_the_only_channel()
+        self._timetoken = int(result.metadata.timetoken)
+        self._region = int(result.metadata.region)
+
         if result.messages is not None and len(result.messages) > 0:
             for message in result.messages:
-                if only_channel:
+                if self._subscription_state.subscribed_to_the_only_channel():
                     message.only_channel_subscription = True
                 self._message_queue_put(message)
 
-        # REVIEW: is int compatible with long for Python 2
-        self._timetoken = int(result.metadata.timetoken)
-        self._region = int(result.metadata.region)
+        logger.debug('Current timetoken and region: tt: %s', self._timetoken)
 
     # TODO: make abstract
     def _register_heartbeat_timer(self):

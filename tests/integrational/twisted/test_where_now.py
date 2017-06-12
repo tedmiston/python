@@ -33,7 +33,7 @@ class WhereNowTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/where_now/single.yaml',
-        filter_query_parameters=['uuid'])
+        filter_query_parameters=['uuid', 'pnsdk'])
     def test_where_now_single_channel(self):
         envelope = yield self.pubnub.where_now().uuid(uuid_looking_for).deferred()
         self.assert_valid_where_now_envelope(envelope, [u'twisted-test-1'])
@@ -42,7 +42,7 @@ class WhereNowTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/where_now/multiple.yaml',
-        filter_query_parameters=['uuid'])
+        filter_query_parameters=['uuid', 'pnsdk'])
     def test_where_now_multiple_channels(self):
         envelope = yield self.pubnub.where_now().uuid(uuid_looking_for).deferred()
         self.assert_valid_where_now_envelope(envelope, [u'twisted-test-2', u'twisted-test-1'])

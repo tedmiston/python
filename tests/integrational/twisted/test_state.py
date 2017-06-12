@@ -39,7 +39,7 @@ class StateTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/state/single_channel.yaml',
-        filter_query_parameters=['uuid'])
+        filter_query_parameters=['uuid', 'pnsdk'])
     def test_state_single_channel(self):
         envelope = yield self.pubnub.set_state().channels(channel).state(state).deferred()
         self.assert_valid_state_envelope(envelope)
@@ -48,7 +48,7 @@ class StateTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/state/multiple_channels.yaml',
-        filter_query_parameters=['uuid'])
+        filter_query_parameters=['uuid', 'pnsdk'])
     def test_state_multiple_channels(self):
         envelope = yield self.pubnub.set_state().channels(channels).state(state).deferred()
         self.assert_valid_state_envelope(envelope)

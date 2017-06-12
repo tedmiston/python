@@ -1,5 +1,8 @@
 import twisted
 import pytest
+import logging
+import sys
+import pubnub
 
 from twisted.internet import reactor
 from twisted.internet.defer import inlineCallbacks, returnValue
@@ -27,6 +30,7 @@ class PublishTestCase(unittest.TestCase):
     def setUp(self):
         self.pool = HTTPConnectionPool(reactor, persistent=False)
         self.pubnub = PubNubTwisted(pnconf, reactor=reactor, pool=self.pool)
+        pubnub.set_stream_logger('pubnub', logging.DEBUG, None, sys.stdout)
 
     def tearDown(self):
         return self.pool.closeCachedConnections()
@@ -85,7 +89,7 @@ class PublishTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/publish/mixed_via_get.yaml',
-        filter_query_parameters=['uuid', 'seqn'])
+        filter_query_parameters=['uuid', 'pnsdk', 'seqn'])
     def test_publish_mixed_via_get(self):
         d0 = yield self.assert_success_publish_get("hi")
         d1 = yield self.assert_success_publish_get(5)
@@ -96,7 +100,7 @@ class PublishTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/publish/mixed_encrypted_via_get.yaml',
-        filter_query_parameters=['uuid', 'seqn'])
+        filter_query_parameters=['uuid', 'pnsdk', 'seqn'])
     def test_publish_mixed_encrypted_via_get(self):
         d0 = yield self.assert_success_encrypted_publish_get("hi")
         d1 = yield self.assert_success_encrypted_publish_get(5)
@@ -108,7 +112,7 @@ class PublishTestCase(unittest.TestCase):
     # @inlineCallbacks
     # @pn_vcr.use_cassette(
     #     'tests/integrational/fixtures/twisted/publish/mixed_via_post.yaml',
-    #     filter_query_parameters=['uuid', 'seqn'])
+    #     filter_query_parameters=['uuid', 'pnsdk', 'seqn'])
     # def test_publish_mixed_via_post(self):
     #     d0 = yield self.assert_success_publish_post("hi")
     #     d1 = yield self.assert_success_publish_post(5)
@@ -119,7 +123,7 @@ class PublishTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/publish/object_via_get.yaml',
-        filter_query_parameters=['uuid', 'seqn'])
+        filter_query_parameters=['uuid', 'pnsdk', 'seqn'])
     def test_publish_object_via_get(self):
         d0 = yield self.assert_success_publish_get({"one": 2, "three": True})
         returnValue(d0)
@@ -139,7 +143,7 @@ class PublishTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/publish/invalid_key.yaml',
-        filter_query_parameters=['uuid', 'seqn'])
+        filter_query_parameters=['uuid', 'pnsdk', 'seqn'])
     def test_error_invalid_key(self):
         conf = PNConfiguration()
         conf.publish_key = "fake"
@@ -154,7 +158,7 @@ class PublishTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/publish/forbidden.yaml',
-        filter_query_parameters=['uuid', 'seqn', 'timestamp', 'signature'])
+        filter_query_parameters=['uuid', 'seqn', 'timestamp', 'signature', 'pnsdk'])
     def test_error_forbidden(self):
         pubnub = PubNubTwisted(pnconf_pam_copy())
         with pytest.raises(PubNubTwistedException) as exception:
@@ -167,7 +171,7 @@ class PublishTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/publish/meta_object.yaml',
-        filter_query_parameters=['uuid', 'seqn'],
+        filter_query_parameters=['uuid', 'pnsdk', 'seqn'],
         match_on=['host', 'method', 'path', 'meta_object_in_query'])
     def test_publish_with_meta(self):
         yield self.assert_success_publish_get('hi', {'a': 2, 'b': True})
@@ -175,7 +179,7 @@ class PublishTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/publish/do_not_store.yaml',
-        filter_query_parameters=['uuid', 'seqn'])
+        filter_query_parameters=['uuid', 'pnsdk', 'seqn'])
     def test_publish_do_not_store(self):
         publish = self.pubnub.publish().channel(channel).message('whatever').should_store(False)
         envelope = yield self.deferred(publish)

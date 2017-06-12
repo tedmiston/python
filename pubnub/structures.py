@@ -43,8 +43,9 @@ class RequestOptions(object):
         """ All query keys and values should be already encoded inside a build_params() method"""
         s = []
 
-        for k, v in self.params.items():
-            s.append(str(k) + "=" + str(v))
+        if self.params:
+            for k, v in self.params.items():
+                s.append(str(k) + "=" + str(v))
 
         if self.sort_params:
             return sorted(s)

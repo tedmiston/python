@@ -17,4 +17,3 @@ class PubNubException(Exception):
     @property
     def _status(self):
         raise DeprecationWarning
-        return self.status

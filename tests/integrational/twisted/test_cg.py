@@ -29,7 +29,7 @@ class CGTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/groups/add_single_channel.yaml',
-        filter_query_parameters=['uuid'])
+        filter_query_parameters=['uuid', 'pnsdk'])
     def test_adding_channel(self):
         channel = 'cgttc'
         group = 'cgttg'
@@ -44,7 +44,7 @@ class CGTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/groups/remove_single_channel.yaml',
-        filter_query_parameters=['uuid'])
+        filter_query_parameters=['uuid', 'pnsdk'])
     def test_removing_channel(self):
         channel = 'cgttc'
         group = 'cgttg'
@@ -59,7 +59,7 @@ class CGTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/groups/add_channels.yaml',
-        filter_query_parameters=['uuid'])
+        filter_query_parameters=['uuid', 'pnsdk'])
     def test_adding_channels(self):
         channel = ['cgttc0', 'cgttc1']
         group = 'cgttg'
@@ -74,7 +74,7 @@ class CGTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/groups/remove_channels.yaml',
-        filter_query_parameters=['uuid'])
+        filter_query_parameters=['uuid', 'pnsdk'])
     def test_removing_channels(self):
         channel = ['cgttc0', 'cgttc1']
         group = 'cgttg'
@@ -89,7 +89,7 @@ class CGTestCase(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/groups/list_channels.yaml',
-        filter_query_parameters=['uuid'])
+        filter_query_parameters=['uuid', 'pnsdk'])
     def test_list_channels(self):
         group = 'cgttg'
 

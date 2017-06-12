@@ -45,7 +45,7 @@ class HereNowTest(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/here_now/global.yaml',
-        filter_query_parameters=['uuid'])
+        filter_query_parameters=['uuid', 'pnsdk'])
     def test_global_here_now(self):
         envelope = yield self.pubnub.here_now() \
             .include_uuids(True) \
@@ -59,7 +59,7 @@ class HereNowTest(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/here_now/single.yaml',
-        filter_query_parameters=['uuid'])
+        filter_query_parameters=['uuid', 'pnsdk'])
     def test_here_now_single_channel(self):
         envelope = yield self.pubnub.here_now() \
             .channels(channel) \
@@ -72,7 +72,7 @@ class HereNowTest(unittest.TestCase):
     @inlineCallbacks
     @pn_vcr.use_cassette(
         'tests/integrational/fixtures/twisted/here_now/multiple.yaml',
-        filter_query_parameters=['uuid'])
+        filter_query_parameters=['uuid', 'pnsdk'])
     def test_here_now_multiple_channels(self):
         envelope = yield self.pubnub.here_now() \
             .channels(channels) \
