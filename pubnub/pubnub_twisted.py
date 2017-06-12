@@ -3,23 +3,15 @@ import logging
 import re
 import six
 import treq
-import sys
 import time
 
-# from StringIO import StringIO
-from twisted.internet.defer import DeferredQueue, Deferred, CancelledError
-from twisted.internet.error import ConnectingCancelledError
+from twisted.internet.defer import DeferredQueue, CancelledError
 from twisted.internet.task import LoopingCall
 from twisted.web._newclient import ResponseNeverReceived
-from twisted.web.client import Agent, HTTPConnectionPool, FileBodyProducer
+from twisted.web.client import Agent, HTTPConnectionPool
 
 from .endpoints.presence.leave import Leave
 from .workers import SubscribeMessageWorker
-
-# if sys.version_info.major >= 3:
-#     from urllib.parse import urlparse, parse_qs
-# else:
-#     from urlparse import urlparse, parse_qs
 
 from .endpoints.pubsub.subscribe import Subscribe
 from .endpoints.presence.heartbeat import Heartbeat
@@ -31,14 +23,11 @@ from . import utils
 from .enums import PNStatusCategory, PNOperationType, PNHeartbeatNotificationOptions
 from .pubnub_core import PubNubCore
 from twisted.internet import reactor as _reactor, threads
-from twisted.python import log
 
 logger = logging.getLogger('pubnub')
 
 
 class PubNubTwisted(PubNubCore):
-    # TODO: custom connection pool
-
     def sdk_platform(self):
         return "-Twisted"
 
@@ -340,9 +329,9 @@ class TwistedSubscriptionManager(SubscriptionManager):
                 .filter_expression(self._pubnub.config.filter_expression) \
                 .deferred() \
                 .addCallbacks(
-                    callback=manage_success,
-                    errback=manage_failure
-                )
+                callback=manage_success,
+                errback=manage_failure
+            )
 
         except Exception as exception:
             raise exception
@@ -375,7 +364,7 @@ class TwistedSubscriptionManager(SubscriptionManager):
         def heartbeat_callback(_, status):
             heartbeat_verbosity = self._pubnub.config.heartbeat_notification_options
             if heartbeat_verbosity == PNHeartbeatNotificationOptions.ALL or (
-                            status.is_error() is True and heartbeat_verbosity == PNHeartbeatNotificationOptions.FAILURES):
+                    status.is_error() is True and heartbeat_verbosity == PNHeartbeatNotificationOptions.FAILURES):
                 self._listener_manager.announce_status(status)
 
         state_payload = self._subscription_state.state_payload()
