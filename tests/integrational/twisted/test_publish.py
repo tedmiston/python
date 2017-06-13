@@ -124,7 +124,7 @@ class PublishTestCase(unittest.TestCase):
     #     d3 = yield self.assert_success_publish_post(["hi", "hi2", "hi3"])
     #     returnValue([d0, d1, d2, d3])
 
-    if PY3:
+    if PY3 or '__pypy__' in sys.builtin_module_names:
         cassette_name = 'tests/integrational/fixtures/twisted/publish/object_via_get_3.yaml'
     else:
         cassette_name = 'tests/integrational/fixtures/twisted/publish/object_via_get.yaml'
