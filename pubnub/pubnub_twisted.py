@@ -157,15 +157,15 @@ class PubNubTwisted(PubNubCore):
                     return
 
                 logger.error(error)
-                raise PubNubTwistedException(
+                return PubNubTwistedException(
                     result=error,
                     status=options.create_status(
-                        category=status_category(response.code),
+                        category=status_category(int(response.code)),
                         response=response,
                         response_info=response_info(response, url, request),
                         exception=PubNubException(
                             errormsg=error,
-                            pn_error=error_value(status),
+                            pn_error=error_value(int(status)),
                             status_code=status
                         )
                     ),
@@ -176,16 +176,16 @@ class PubNubTwisted(PubNubCore):
                 logger.debug('Generating Envelope')
                 logger.debug('Status: ' + str(response.code))
 
-                if response.code != 200:
+                if int(response.code) != 200:
                     raise PubNubTwistedException(
                         result=json,
                         status=options.create_status(
-                            category=status_category(response.code),
+                            category=status_category(int(response.code)),
                             response=response,
                             response_info=response_info(response, url, request),
                             exception=PubNubException(
                                 errormsg=str(json),
-                                pn_error=error_value(response.code),
+                                pn_error=error_value(int(response.code)),
                                 status_code=response.code
                             )
                         ),
@@ -196,7 +196,7 @@ class PubNubTwisted(PubNubCore):
                     return TwistedEnvelope(
                         result=options.create_response(json),
                         status=options.create_status(
-                            category=status_category(response.code),
+                            category=status_category(int(response.code)),
                             response=response,
                             response_info=response_info(response, url, request),
                             exception=None
@@ -212,7 +212,7 @@ class PubNubTwisted(PubNubCore):
             if error.check(ResponseNeverReceived):
                 return
             logger.error(error)
-            raise error
+            raise error.value
 
         def request_options(method, url, reactor, headers, persistent, body):
             return {
@@ -441,6 +441,7 @@ class PubNubTwistedException(Exception):
         self.result = result
         self.status = status
         self.raw_result = raw_result
+        self.message = str(self.status.error_data.exception)
 
     def __str__(self):
         return str(self.status.error_data.exception)

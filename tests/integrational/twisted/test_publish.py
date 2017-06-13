@@ -4,6 +4,7 @@ import logging
 import sys
 import pubnub
 
+from six import PY3
 from twisted.internet import reactor
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.trial import unittest
@@ -25,7 +26,6 @@ twisted.internet.base.DelayedCall.debug = True
 
 channel = 'twisted-test'
 
-
 class PublishTestCase(unittest.TestCase):
     def setUp(self):
         self.pool = HTTPConnectionPool(reactor, persistent=False)
@@ -46,7 +46,10 @@ class PublishTestCase(unittest.TestCase):
         try:
             publish.deferred()
         except PubNubException as exception:
-            self.assertTrue(message in exception.message)
+            if PY3:
+                self.assertTrue(str(message) == str(exception))
+            else:
+                self.assertTrue(message in exception.message)
         else:
             self.fail('Expected PubNubException not raised')
 
@@ -120,9 +123,14 @@ class PublishTestCase(unittest.TestCase):
     #     d3 = yield self.assert_success_publish_post(["hi", "hi2", "hi3"])
     #     returnValue([d0, d1, d2, d3])
 
+    if PY3:
+        cassette_name = 'tests/integrational/fixtures/twisted/publish/object_via_get_3.yaml'
+    else:
+        cassette_name = 'tests/integrational/fixtures/twisted/publish/object_via_get.yaml'
+
     @inlineCallbacks
     @pn_vcr.use_cassette(
-        'tests/integrational/fixtures/twisted/publish/object_via_get.yaml',
+        cassette_name,
         filter_query_parameters=['uuid', 'pnsdk', 'seqn'])
     def test_publish_object_via_get(self):
         d0 = yield self.assert_success_publish_get({"one": 2, "three": True})
@@ -152,8 +160,12 @@ class PublishTestCase(unittest.TestCase):
         with pytest.raises(PubNubTwistedException) as exception:
             yield pubnub.publish().channel(channel).message("hey").deferred()
 
-        self.assertEqual(exception.value.status.error_data.information,
-                         "HTTP Client Error (400): [0, u'Invalid Key', u'14767989321048626']")
+        if PY3:
+            self.assertEqual(exception.value.status.error_data.information,
+                             "HTTP Client Error (400): [0, 'Invalid Key', '14767989321048626']")
+        else:
+            self.assertEqual(exception.value.status.error_data.information,
+                             "HTTP Client Error (400): [0, u'Invalid Key', u'14767989321048626']")
 
     @inlineCallbacks
     @pn_vcr.use_cassette(
@@ -164,9 +176,15 @@ class PublishTestCase(unittest.TestCase):
         with pytest.raises(PubNubTwistedException) as exception:
             yield pubnub.publish().channel("not_permitted_channel").message("hey").deferred()
 
-        self.assertEqual(exception.value.status.error_data.information,
-                         "HTTP Client Error (403): {u'status': 403, u'message': u'Forbidden', u'payload':"
-                         " {u'channels': [u'not_permitted_channel']}, u'service': u'Access Manager', u'error': True}")
+        if PY3:
+            print(exception.value.status.error_data.information)
+            self.assertEqual(exception.value.status.error_data.information,
+                             "HTTP Client Error (403): {'message': 'Forbidden', 'payload': {'channels': ['not_permitted"
+                             "_channel']}, 'error': True, 'service': 'Access Manager', 'status': 403}")
+        else:
+            self.assertEqual(exception.value.status.error_data.information,
+                             "HTTP Client Error (403): {u'status': 403, u'message': u'Forbidden', u'payload':"
+                             " {u'channels': [u'not_permitted_channel']}, u'service': u'Access Manager', u'error': True}")
 
     @inlineCallbacks
     @pn_vcr.use_cassette(

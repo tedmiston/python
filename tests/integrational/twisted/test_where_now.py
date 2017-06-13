@@ -1,4 +1,9 @@
 import twisted
+import pubnub
+import logging
+import sys
+
+pubnub.set_stream_logger('pubnub', logging.DEBUG, None, sys.stdout)
 
 from twisted.internet import reactor
 from twisted.internet.defer import inlineCallbacks, returnValue

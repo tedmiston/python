@@ -36,11 +36,11 @@ class HereNowTest(unittest.TestCase):
         def get_uuids(here_now_channel_data):
             return [here_now_channel_data.channel_name,
                     here_now_channel_data.occupancy,
-                    map(lambda x: x.uuid, here_now_channel_data.occupants)]
+                    list(map(lambda x: x.uuid, here_now_channel_data.occupants))]
 
         self.assertIsInstance(envelope, TwistedEnvelope)
         self.assertIsInstance(envelope.result, PNHereNowResult)
-        self.assertEqual(map(get_uuids, envelope.result.channels), result_channels)
+        self.assertEqual(list(map(get_uuids, envelope.result.channels)), result_channels)
 
     @inlineCallbacks
     @pn_vcr.use_cassette(
