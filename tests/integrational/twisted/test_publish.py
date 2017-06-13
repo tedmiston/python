@@ -26,6 +26,7 @@ twisted.internet.base.DelayedCall.debug = True
 
 channel = 'twisted-test'
 
+
 class PublishTestCase(unittest.TestCase):
     def setUp(self):
         self.pool = HTTPConnectionPool(reactor, persistent=False)
@@ -184,7 +185,8 @@ class PublishTestCase(unittest.TestCase):
         else:
             self.assertEqual(exception.value.status.error_data.information,
                              "HTTP Client Error (403): {u'status': 403, u'message': u'Forbidden', u'payload':"
-                             " {u'channels': [u'not_permitted_channel']}, u'service': u'Access Manager', u'error': True}")
+                             " {u'channels': [u'not_permitted_channel']}, u'service': u'Access Manager', u'error': True"
+                             "}")
 
     @inlineCallbacks
     @pn_vcr.use_cassette(
