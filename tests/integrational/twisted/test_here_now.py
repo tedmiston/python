@@ -79,7 +79,7 @@ class HereNowTest(unittest.TestCase):
             envelope,
             {u'status': 200, u'message': u'OK', u'payload': {u'channels': {
                 u'twisted-test-1': {u'uuids': [u'00de2586-7ad8-4955-b5f6-87cae3215d02'], u'occupancy': 1}},
-                                                             u'total_channels': 1, u'total_occupancy': 1},
+                u'total_channels': 1, u'total_occupancy': 1},
              u'service': u'Presence'}
         )
         returnValue(envelope)
