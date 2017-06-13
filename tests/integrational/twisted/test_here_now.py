@@ -26,21 +26,10 @@ class HereNowTest(unittest.TestCase):
     def tearDown(self):
         return self.pool.closeCachedConnections()
 
-    class PNHereNowChannelData(object):
-        def __init__(self, channel_name, occupancy, occupants):
-            self.channel_name = channel_name
-            self.occupancy = occupancy
-            self.occupants = occupants
-
-    def assert_valid_here_now_envelope(self, envelope, result_channels):
-        def get_uuids(here_now_channel_data):
-            return [here_now_channel_data.channel_name,
-                    here_now_channel_data.occupancy,
-                    list(map(lambda x: x.uuid, here_now_channel_data.occupants))]
-
+    def assert_valid_here_now_envelope(self, envelope, expected_result):
         self.assertIsInstance(envelope, TwistedEnvelope)
         self.assertIsInstance(envelope.result, PNHereNowResult)
-        self.assertEqual(list(map(get_uuids, envelope.result.channels)), result_channels)
+        self.assertEqual(envelope.raw_result, expected_result)
 
     @inlineCallbacks
     @pn_vcr.use_cassette(
@@ -51,9 +40,12 @@ class HereNowTest(unittest.TestCase):
             .include_uuids(True) \
             .deferred()
 
-        self.assert_valid_here_now_envelope(envelope,
-                                            [[u'twisted-test-1', 1, [u'00de2586-7ad8-4955-b5f6-87cae3215d02']],
-                                             [u'twisted-test', 1, [u'00de2586-7ad8-4955-b5f6-87cae3215d02']]])
+        self.assert_valid_here_now_envelope(
+            envelope,
+            {u'status': 200, u'message': u'OK', u'payload': {
+                u'channels': {u'twisted-test-1': {u'uuids': [u'00de2586-7ad8-4955-b5f6-87cae3215d02'], u'occupancy': 1},
+                              u'twisted-test': {u'uuids': [u'00de2586-7ad8-4955-b5f6-87cae3215d02'], u'occupancy': 1}},
+                u'total_channels': 2, u'total_occupancy': 2}, u'service': u'Presence'})
         returnValue(envelope)
 
     @inlineCallbacks
@@ -66,7 +58,11 @@ class HereNowTest(unittest.TestCase):
             .include_uuids(True) \
             .deferred()
 
-        self.assert_valid_here_now_envelope(envelope, [['twisted-test', 1, [u'00de2586-7ad8-4955-b5f6-87cae3215d02']]])
+        self.assert_valid_here_now_envelope(
+            envelope,
+            {u'status': 200, u'message': u'OK', u'occupancy': 1, u'uuids': [u'00de2586-7ad8-4955-b5f6-87cae3215d02'],
+             u'service': u'Presence'}
+        )
         returnValue(envelope)
 
     @inlineCallbacks
@@ -79,6 +75,11 @@ class HereNowTest(unittest.TestCase):
             .include_uuids(True) \
             .deferred()
 
-        self.assert_valid_here_now_envelope(envelope,
-                                            [[u'twisted-test-1', 1, [u'00de2586-7ad8-4955-b5f6-87cae3215d02']]])
+        self.assert_valid_here_now_envelope(
+            envelope,
+            {u'status': 200, u'message': u'OK', u'payload': {u'channels': {
+                u'twisted-test-1': {u'uuids': [u'00de2586-7ad8-4955-b5f6-87cae3215d02'], u'occupancy': 1}},
+                                                             u'total_channels': 1, u'total_occupancy': 1},
+             u'service': u'Presence'}
+        )
         returnValue(envelope)

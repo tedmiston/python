@@ -178,15 +178,19 @@ class PublishTestCase(unittest.TestCase):
             yield pubnub.publish().channel("not_permitted_channel").message("hey").deferred()
 
         if PY3:
-            print(exception.value.status.error_data.information)
-            self.assertEqual(exception.value.status.error_data.information,
-                             "HTTP Client Error (403): {'message': 'Forbidden', 'payload': {'channels': ['not_permitted"
-                             "_channel']}, 'error': True, 'service': 'Access Manager', 'status': 403}")
+            self.assertEqual(
+                exception.value.raw_result,
+                {'status': 403, 'message': 'Forbidden', 'payload': {'channels': ['not_permitted_channel']},
+                 'service': 'Access Manager', 'error': True}
+            )
+            self.assertEqual(exception.value.status.error_data.information[:23], "HTTP Client Error (403)")
         else:
-            self.assertEqual(exception.value.status.error_data.information,
-                             "HTTP Client Error (403): {u'status': 403, u'message': u'Forbidden', u'payload':"
-                             " {u'channels': [u'not_permitted_channel']}, u'service': u'Access Manager', u'error': True"
-                             "}")
+            self.assertEqual(
+                exception.value.raw_result,
+                {u'status': 403, u'message': u'Forbidden', u'payload': {u'channels': [u'not_permitted_channel']},
+                 u'service': u'Access Manager', u'error': True}
+            )
+            self.assertEqual(exception.value.status.error_data.information[:23], "HTTP Client Error (403)")
 
     @inlineCallbacks
     @pn_vcr.use_cassette(
