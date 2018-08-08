@@ -39,7 +39,13 @@ elif version.startswith('3.4'):
 elif version.startswith('3.5'):
     run(fcmn)
     run('%s--ignore=tests/integrational/twisted/' % tcmn)
-elif version.startswith('3.6') or version == 'nightly':
+elif version.startswith('3.6'):
+    run(fcmn)
+    run('%s--ignore=tests/integrational/twisted/' % tcmn)
+elif version.startswith('3.7'):
+    run(fcmn)
+    run('%s--ignore=tests/integrational/twisted/' % tcmn)
+elif version == 'nightly':
     run(fcmn)
     run('%s--ignore=tests/integrational/twisted/' % tcmn)
 elif version.startswith('pypy'):
